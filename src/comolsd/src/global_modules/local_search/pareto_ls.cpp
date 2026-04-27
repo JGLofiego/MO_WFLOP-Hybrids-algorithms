@@ -18,7 +18,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
     while(!(p->allExplored())){
         it = p->getRandomUnex();
 
-        vector<Solution *> neighborhood = getNeighborhood(it->first, 100);
+        vector<Solution *> neighborhood = getNeighborhood(it->first, neighborhood_size);
 
         for(int i = 0; i < neighborhood.size(); i++){
             p->adicionarSol(neighborhood[i]);

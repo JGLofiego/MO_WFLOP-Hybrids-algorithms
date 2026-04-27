@@ -50,7 +50,7 @@ void get_instance_info(int argc, char* argv[]){
     srand(time(nullptr));
     
     string instance = "A";
-    string pathFolders = "..";
+    string pathFolders = "/home/jglofiego/Documentos/work/MO_WFLOP-Hybrids-algorithms";
     string windFile = "RVO_HKN.txt";
 
     ifstream file;

@@ -4,6 +4,8 @@
 #include "../adaptative_grid/ParetoSetLS.h"
 #include "./neighborhood.h"
 
+extern int neighborhood_size;
+
 vector<Solution *> * pareto_ls(vector<Solution*> s);
 
 #endif
