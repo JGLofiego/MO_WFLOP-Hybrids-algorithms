@@ -1,0 +1,20 @@
+============================== LOG ==============================
+Instance: 278
+Run: 15
+Metaheuristic: MOEA/D Pareto Local Search
+Execution started at: ter 28 abr 2026 04:37:51 -03
+
+Number of subproblems: 100
+Number of neighbors: 10
+Number of fixed turbines: 36
+Number of mobile turbines: 64
+Wind: 13.000000000000
+Angle: 0.000000000000
+
+Run time:
+
+real	1m53,435s
+user	1m53,381s
+sys	0m0,029s
+Execution ended at: ter 28 abr 2026 04:39:45 -03
+=================================================================

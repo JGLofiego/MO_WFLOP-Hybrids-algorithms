@@ -1,0 +1,20 @@
+============================== LOG ==============================
+Instance: 502
+Run: 16
+Metaheuristic: COMOLS/D
+Execution started at: qua 29 abr 2026 00:29:57 -03
+
+Number of subproblems: 100
+Number of neighbors: 10
+Number of fixed turbines: 3
+Number of mobile turbines: 10
+Wind: 10.000000000000
+Angle: 240.000000000000
+
+Run time:
+
+real	0m57,597s
+user	0m57,568s
+sys	0m0,018s
+Execution ended at: qua 29 abr 2026 00:30:54 -03
+=================================================================
