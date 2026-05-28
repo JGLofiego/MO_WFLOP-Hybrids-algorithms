@@ -1,0 +1,20 @@
+============================== LOG ==============================
+Instance: 216
+Run: 12
+Metaheuristic: NSGA-II Anytime Pareto Local Search
+Execution started at: dom 24 mai 2026 21:10:49 -03
+
+Number of subproblems: 100
+Number of neighbors: 10
+Number of fixed turbines: 16
+Number of mobile turbines: 61
+Wind: 8.000000000000
+Angle: 150.000000000000
+
+Run time:
+
+real	6m51,696s
+user	6m49,585s
+sys	0m1,911s
+Execution ended at: dom 24 mai 2026 21:17:41 -03
+=================================================================
