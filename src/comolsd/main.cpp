@@ -9,7 +9,7 @@ int countRevalue = 0;
 
 BoundedParetoSet * pareto = new BoundedParetoSet();
 int stop_criteria = 1000000;
-string algorithm = "comolsd";
+string algorithm = "moead_pls";
 string instance = "A";
 string root_folder = "./";
 

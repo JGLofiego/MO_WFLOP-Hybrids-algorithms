@@ -6,13 +6,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
 
     for(int i = 0; i < population.size(); i++){
         p->adicionarSol(population[i]);
-    }
-
-    // cout << "=========================ARCHIVE=========================" << endl;
-    // for(auto a = p->getBegin(); a != p->getEnd(); a++){
-    //     cout << a->first->fitness.first << " " << a->first->fitness.second << endl;
-    // }
-
+    }    
     pair<Solution *, bool> * it;
 
     while(!(p->allExplored())){
@@ -31,8 +25,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
         neighborhood.clear();
     }
 
-    vector<Solution *> * result;
-
+    vector<Solution *> * result = new vector<Solution*>();
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
         result->push_back((i)->first);
     }
