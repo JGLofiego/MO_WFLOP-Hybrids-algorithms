@@ -31,7 +31,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
         neighborhood.clear();
     }
 
-    vector<Solution *> * result;
+    vector<Solution *> * result = new vector<Solution*>();
 
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
         result->push_back((i)->first);

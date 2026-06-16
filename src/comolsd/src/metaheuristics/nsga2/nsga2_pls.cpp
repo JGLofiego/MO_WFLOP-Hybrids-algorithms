@@ -45,7 +45,7 @@ vector<Solution*> nsga2_pls(vector<Solution>& pop){
 
   while(countRevalue < stop_criteria){
 
-    infoRunNSGA2 << "Generation " << generation << " | Revalues: " << countRevalue << " | GridSize: " << pareto->getSize() << endl;
+    infoRunNSGA2 << "Generation " << generation << " | Revalues: " << countRevalue << " | GridSize: " << pareto->getSize();
 
     // cout << "======================= GENERATION: " << generation << "=======================" << endl << endl;
 
@@ -166,6 +166,7 @@ vector<Solution*> nsga2_pls(vector<Solution>& pop){
     delete fronts;
 
     if((static_cast<double>(rand()) / RAND_MAX) < ls_prob){
+      infoRunNSGA2 << " | LOCAL SEARCH EXECUTED";
       vector<Solution *> * newPopulation = pareto_ls(*population);
   
       for(auto i : *population){
@@ -185,7 +186,8 @@ vector<Solution*> nsga2_pls(vector<Solution>& pop){
     }
 
     generation++;
-    ls_prob += countRevalue / stop_criteria;
+    infoRunNSGA2 << endl;
+    ls_prob = ((double) countRevalue) / ((double) stop_criteria);
   }
   
   infoRunNSGA2.close();
