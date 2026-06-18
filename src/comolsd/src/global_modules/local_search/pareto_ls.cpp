@@ -15,7 +15,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
 
     pair<Solution *, bool> * it;
 
-    while(!(p->allExplored())){
+    while(!(p->allExplored()) && countRevalue < stop_criteria){
         it = p->getRandomUnex();
 
         vector<Solution *> neighborhood = getNeighborhood(it->first, 163);
@@ -36,6 +36,9 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
         result->push_back((i)->first);
     }
+
+    p->clear();
+    delete p;
 
     return result;
 }
