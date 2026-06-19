@@ -2,7 +2,7 @@
 Instance: 278
 Run: 5
 Metaheuristic: MOEA/D Pareto Local Search
-Execution started at: ter 28 abr 2026 04:02:13 -03
+Execution started at: qua 17 jun 2026 23:04:32 -03
 
 Number of subproblems: 100
 Number of neighbors: 10
@@ -13,8 +13,8 @@ Angle: 270.000000000000
 
 Run time:
 
-real	3m33,635s
-user	3m33,563s
-sys	0m0,033s
-Execution ended at: ter 28 abr 2026 04:05:47 -03
+real	8m23,299s
+user	8m22,922s
+sys	0m0,045s
+Execution ended at: qua 17 jun 2026 23:12:55 -03
 =================================================================
