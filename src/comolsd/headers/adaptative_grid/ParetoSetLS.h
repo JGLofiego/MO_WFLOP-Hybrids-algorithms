@@ -21,8 +21,7 @@ class ParetoSetLS {
         range rangeNovo[2], rangeAtual[2];
         int frequencia[NUMEROVERTICES][NUMEROVERTICES];
         Grid g;
-        double ohiv(pair<Solution *, bool> a);
-        void sortOHIV();
+        double ohiv(pair<Solution *, bool> & a);
 
         int calcularGridPos(Solution &s);
         void updateGrid();

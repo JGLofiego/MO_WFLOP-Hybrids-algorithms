@@ -10,15 +10,11 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
         p->adicionarSol(population[i]);
     }
 
-    // cout << "=========================ARCHIVE=========================" << endl;
-    // for(auto a = p->getBegin(); a != p->getEnd(); a++){
-    //     cout << a->first->fitness.first << " " << a->first->fitness.second << endl;
-    // }
 
     pair<Solution *, bool> * it;
 
     // Stop on first solution "improved"
-    while(!(p->allExplored())){
+    while(!(p->allExplored()) && countRevalue < stop_criteria){
         it = p->getNext();
 
         vector<Solution *> neighborhood = getNeighborhood(it->first, neighborhood_size);
@@ -40,7 +36,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
             }
         }
 
-        it->second = true; //It is possible that *it is not the same at the end of neighborhood insertion
+        it->second = true;
 
         for(auto p: neighborhood){
             delete p;
@@ -53,7 +49,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
     p->unexploreAll();
 
     // Stop on neighborhood fully explored
-    while(!(p->allExplored())){
+    while(!(p->allExplored()) && countRevalue < stop_criteria){
         it = p->getNext();
 
         vector<Solution *> neighborhood = getNeighborhood(it->first, neighborhood_size);
@@ -81,11 +77,14 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
         neighborhood.clear();
     }
 
-    vector<Solution *> * result;
+    vector<Solution *> * result = new vector<Solution*>();
 
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
         result->push_back((i)->first);
     }
+
+    p->clear();
+    delete p;
 
     return result;
 }
