@@ -19,7 +19,7 @@ using namespace std;
 double ohvc(pair<Solution*, bool> const & s, pair<Solution*, bool> const & s_){
     return abs((s.first->fitness.first - s_.first->fitness.first) * (s_.first->fitness.second - s.first->fitness.second));
 };
-double ParetoSetLS::ohiv(pair<Solution *, bool> & a){
+double ParetoSetLS::ohiv(pair<Solution *, bool> a){
     double s_value = a.first->fitness.second;
     Solution s_inf = *a.first;
     Solution s_sup = *a.first;
@@ -270,16 +270,20 @@ pair<Solution *, bool> * ParetoSetLS::getNext(){
     double max_ohiv = 0;
     pair<Solution *, bool> * nextOne = new pair<Solution *, bool>();
 
-    auto it = sol.begin();
     double aux;
-
+    
+    auto it = sol.begin();
+    
     while(it != sol.end()){
+        cout << "it before: " << &(*it);
         aux = ohiv(*it);
+        cout << " it after: " << &(*it);
         if(!it->second && aux > max_ohiv){
             max_ohiv = aux;
             nextOne = &(*it);
         }
         it++;
+        cout << " it final: " << &(*it) << " countRevalue: " << countRevalue << endl;
     }
 
     return nextOne;

@@ -15,7 +15,9 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
 
     // Stop on first solution "improved"
     while(!(p->allExplored()) && countRevalue < stop_criteria){
+        // cout << "it before: " << it << endl;
         it = p->getNext();
+        // cout << "it after: " << it << endl;
 
         vector<Solution *> neighborhood = getNeighborhood(it->first, neighborhood_size);
 
