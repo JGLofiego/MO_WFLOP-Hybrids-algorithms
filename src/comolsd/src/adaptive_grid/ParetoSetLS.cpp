@@ -275,15 +275,12 @@ pair<Solution *, bool> * ParetoSetLS::getNext(){
     auto it = sol.begin();
     
     while(it != sol.end()){
-        cout << "it before: " << &(*it);
         aux = ohiv(*it);
-        cout << " it after: " << &(*it);
         if(!it->second && aux > max_ohiv){
             max_ohiv = aux;
             nextOne = &(*it);
         }
         it++;
-        cout << " it final: " << &(*it) << " countRevalue: " << countRevalue << endl;
     }
 
     return nextOne;
