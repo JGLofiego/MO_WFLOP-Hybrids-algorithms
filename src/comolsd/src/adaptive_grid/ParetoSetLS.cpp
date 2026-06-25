@@ -240,13 +240,13 @@ bool ParetoSetLS::confereGrid() {
     return s == sol.size();
 }
 
-pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
+Solution * ParetoSetLS::getRandomUnex(){
     vector<int> indexes;
     
     int size = sol.size();
 
     auto it = sol.begin();
-    
+
     for(int i = 0; i < size; i++){
         if(!it->second){
             indexes.push_back(i);
@@ -254,38 +254,57 @@ pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
         it++;
     }
 
+    if (indexes.empty()) {
+        return nullptr;
+    }
+
     int r = rand() % indexes.size();
 
     it = sol.begin();
 
-    for(int i = 0; i < indexes[r]; i++){
+    for(int j = 0; j < indexes[r]; j++){
         it++;
     }
 
-    return &(*it);
+    return it->first;
 }
 
-pair<Solution *, bool> * ParetoSetLS::getNext(){
+bool ParetoSetLS::markExplored(Solution *s) {
+    for (auto &entry : sol) {
+        if (entry.first == s) {
+            entry.second = true;
+            return true;
+        }
+    }
+    return false;
+}
 
-    double max_ohiv = 0;
-    pair<Solution *, bool> * nextOne = new pair<Solution *, bool>();
+Solution * ParetoSetLS::getNext(){
+
+    double max_ohiv;
+    Solution * nextOne;
+    
+    auto it = sol.begin();
+    while(it != sol.end() && it->second){
+        it++;
+    }
+    
+    nextOne = it->first;
+    max_ohiv = ohiv(*it);
 
     double aux;
     
-    auto it = sol.begin();
-    
     while(it != sol.end()){
-        cout << "it before: " << &(*it);
-        aux = ohiv(*it);
-        cout << " it after: " << &(*it);
-        if(!it->second && aux > max_ohiv){
-            max_ohiv = aux;
-            nextOne = &(*it);
+        if(!it->second){
+            aux = ohiv(*it);
+            if(aux > max_ohiv){
+                max_ohiv = aux;
+                nextOne = it->first;
+            }
         }
         it++;
-        cout << " it final: " << &(*it) << " countRevalue: " << countRevalue << endl;
     }
-
+    
     return nextOne;
 };
 
