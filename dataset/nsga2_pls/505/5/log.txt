@@ -1,9 +1,11 @@
 ============================== LOG ==============================
 Instance: 505
 Run: 5
-Metaheuristic: COMOLS/D
-Execution started at: qua 29 abr 2026 01:33:48 -03
+Metaheuristic: NSGA-II_PLS
+Execution started at: qua 24 jun 2026 20:04:15 -03
+../instances/site/505/availablePositions.txt
 
+Instance: 505
 Number of subproblems: 100
 Number of neighbors: 10
 Number of fixed turbines: 3
@@ -13,8 +15,8 @@ Angle: 0.000000000000
 
 Run time:
 
-real	1m55,702s
-user	1m55,061s
-sys	0m0,606s
-Execution ended at: qua 29 abr 2026 01:35:44 -03
+real	1m54,495s
+user	1m36,026s
+sys	0m0,934s
+Execution ended at: qua 24 jun 2026 20:06:09 -03
 =================================================================
