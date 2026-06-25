@@ -83,11 +83,12 @@ int ParetoSetLS::getPositionCount(Solution &s) {
 }
 
 bool ParetoSetLS::allExplored(){
-    list<pair<Solution *, bool>>::iterator it;
-    for (it = sol.begin(); it != sol.end(); it++){
-        if(!(*it).second){
+    list<pair<Solution *, bool>>::iterator it = sol.begin();
+    while(it != sol.end()){
+        if(!it->second){
             return false;
         }
+        it++;
     }
     return true;
 }
@@ -131,12 +132,15 @@ bool ParetoSetLS::adicionarSol(Solution *s) {
     }
 
     list<list<pair<Solution *, bool>>::iterator>::iterator j = remover.begin();
+    Solution * toDelete;
     while (j != remover.end()) {
+        toDelete = (*j)->first;
         // remove do grid
         g.removeGrid(calcularGridPos(*(*j)->first));
         // remove do conjunto pareto
-        delete((*j)->first);
         sol.erase(*j);
+        delete toDelete;
+        toDelete = NULL;
         j++;
     }
 
@@ -197,7 +201,7 @@ bool ParetoSetLS::confereGrid() {
     return s == sol.size();
 }
 
-pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
+Solution * ParetoSetLS::getRandomUnex(){
     vector<int> indexes;
     
     int size = sol.size();
@@ -211,6 +215,10 @@ pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
         it++;
     }
 
+    if (indexes.empty()) {
+        return nullptr;
+    }
+
     int r = rand() % indexes.size();
 
     it = sol.begin();
@@ -219,7 +227,17 @@ pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
         it++;
     }
 
-    return &(*it);
+    return it->first;
+}
+
+bool ParetoSetLS::markExplored(Solution *s) {
+    for (auto &entry : sol) {
+        if (entry.first == s) {
+            entry.second = true;
+            return true;
+        }
+    }
+    return false;
 }
 
 

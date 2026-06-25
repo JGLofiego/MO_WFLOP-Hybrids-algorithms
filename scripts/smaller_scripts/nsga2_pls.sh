@@ -20,7 +20,7 @@ mkdir -p "$log_dir"
     echo "============================== LOG =============================="
     echo "Instance: $instance"
     echo "Run: $run"
-    echo "Metaheuristic: COMOLS/D"
+    echo "Metaheuristic: NSGA-II_PLS"
     echo "Execution started at: $(date)"
 
     { time ./exe/nsga2_pls "$instance" "$path" "$angle" "$wind"; } 2>&1

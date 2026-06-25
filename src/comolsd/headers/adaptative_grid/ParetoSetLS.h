@@ -36,7 +36,8 @@ class ParetoSetLS {
         std::list<pair<Solution *, bool>> getElementos();
         std::list<pair<Solution *, bool>>::iterator getBegin();
         std::list<pair<Solution *, bool>>::iterator getEnd();
-        pair<Solution *, bool> * getRandomUnex();
+        Solution * getRandomUnex();
+        bool markExplored(Solution *s);
         
         virtual bool adicionarSol(Solution *s);
         int getSize();
