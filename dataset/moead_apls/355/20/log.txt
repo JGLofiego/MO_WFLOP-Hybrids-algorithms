@@ -1,8 +1,8 @@
 ============================== LOG ==============================
 Instance: 355
 Run: 20
-Metaheuristic: MOEA/D Pareto Local Search
-Execution started at: sáb 23 mai 2026 13:56:36 -03
+Metaheuristic: MOEA/D Anytime Pareto Local Search
+Execution started at: sáb 27 jun 2026 01:57:18 -03
 
 Number of subproblems: 100
 Number of neighbors: 10
@@ -13,8 +13,8 @@ Angle: 300.000000000000
 
 Run time:
 
-real	6m49,809s
-user	6m49,478s
-sys	0m0,072s
-Execution ended at: sáb 23 mai 2026 14:03:25 -03
+real	10m41,251s
+user	10m41,023s
+sys	0m0,047s
+Execution ended at: sáb 27 jun 2026 02:07:59 -03
 =================================================================
