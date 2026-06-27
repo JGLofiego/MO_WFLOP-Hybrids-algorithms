@@ -24,7 +24,7 @@ for instance in "${batch[@]}"; do
       echo "Running  with instance $instance, Run: $i"
       bash "$script2" "$instance" "$i"
 
-      echo "MOEA/D_PLS has been executed for instance: $instance, Run: $i."
+      echo "MOEA/D Anytime PLS has been executed for instance: $instance, Run: $i."
       echo "---------------------------------------------"
     } >> "$log_file" 2>&1
 
