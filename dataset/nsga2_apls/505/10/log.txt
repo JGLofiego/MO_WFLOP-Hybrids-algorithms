@@ -2,7 +2,7 @@
 Instance: 505
 Run: 10
 Metaheuristic: NSGA-II Anytime Pareto Local Search
-Execution started at: dom 24 mai 2026 01:20:37 -03
+Execution started at: sáb 27 jun 2026 07:12:39 -03
 
 Number of subproblems: 100
 Number of neighbors: 10
@@ -13,8 +13,8 @@ Angle: 30.000000000000
 
 Run time:
 
-real	1m58,994s
-user	1m58,307s
-sys	0m0,632s
-Execution ended at: dom 24 mai 2026 01:22:36 -03
+real	2m8,486s
+user	2m8,203s
+sys	0m0,080s
+Execution ended at: sáb 27 jun 2026 07:14:47 -03
 =================================================================
