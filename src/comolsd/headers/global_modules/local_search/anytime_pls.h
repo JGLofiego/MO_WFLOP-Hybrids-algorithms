@@ -4,6 +4,8 @@
 #include "../adaptative_grid/ParetoSetLS.h"
 #include "./neighborhood.h"
 
+extern int max_iter_ls;
+
 vector<Solution *> * anytime_pls(vector<Solution*> s);
 
 #endif
