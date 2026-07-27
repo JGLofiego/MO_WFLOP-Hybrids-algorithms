@@ -1,5 +1,6 @@
 #include "./headers/main.h"
 #include "./headers/globals.h"
+#include "./headers/global_modules/local_search/local_search_type.h"
 
 #include <iostream>
 #include <string>
@@ -10,7 +11,8 @@ int countRevalue = 0;
 
 BoundedParetoSet * pareto = new BoundedParetoSet();
 int stop_criteria = 1000000;
-string algorithm = "comolsd";
+string algorithm = "nsga2_hybrid";
+string local_search_type = "apls";
 string instance = "A";
 string root_folder = "./";
 int neighborhood_size = 10;
@@ -27,30 +29,34 @@ int main(int argc, char* argv[]){
         root_folder = argv[2];
         neighborhood_size = stoi(argv[5]);
     }
-    
+    if(argc > 6){
+        algorithm = argv[6];
+    }
+    if(argc > 7){
+        local_search_type = argv[7];
+    }
+
     string path;
     
     int num_neighbors = 10;
 
     get_instance_info(argc, argv);
 
-    int sum = 0;
-    for(auto elem : turbines_per_zone)
-        sum += elem;
+    LocalSearchType lsType = parseLocalSearchType(local_search_type);
+    auto lsFunction = getLocalSearchFunction(lsType);
 
-    // cout << endl;
-    // cout << "Number of subproblems: " << SIZE_OF_POPULATION << endl;
-    // cout << "Number of neighbors: " << num_neighbors << endl;
-    // cout << "Number of fixed turbines: " << fixd.size() << endl;
-    // cout << "Number of mobile turbines: " << sum << endl;
-    // cout << "Wind: " << wind << endl;
-    // cout << "Angle: " << angle << endl << endl;
-
-    // cout << "Run time:" << endl;
-    
     auto population = create_initial_population(SIZE_OF_POPULATION);
-    // nsga2_pls(population);
-    moead_pls(population);
+
+    if (algorithm == "nsga2_hybrid"){
+        nsga2_hybrid(population, lsFunction);
+    } else if (algorithm == "moead_hybrid"){
+        moead_hybrid(population, lsFunction);
+    } else {
+        cerr << "Unknown algorithm: " << algorithm << endl;
+        return 1;
+    }
+
+    // cout << pathHypervolume + " " + pathHvParams + " " + param + " " + "hv.out" << endl;
 
     string pathAbsolute = "/home/jglofiego/Documentos/work/MO_WFLOP-Hybrids-algorithms/scripts/exe";
 
@@ -58,9 +64,7 @@ int main(int argc, char* argv[]){
     string pathHvParams = pathAbsolute + "/hyp_ind_param_NONORM.txt";
     string refSet = pathAbsolute + "/dummy_ref.txt";
 
-    string param = instance + "_" + algorithm + "_" + "1000000" + ".txt";
-
-    // cout << pathHypervolume + " " + pathHvParams + " " + param + " " + "hv.out" << endl;
+    string param = instance + "_" + algorithm + "_" + local_search_type + "_" + "1000000" + ".txt";
 
     auto _ = system((pathHypervolume + " " + pathHvParams + " " + param + " " + refSet + " " + "hv.out").c_str());
 

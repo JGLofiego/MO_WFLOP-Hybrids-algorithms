@@ -13,17 +13,21 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
     //     cout << a->first->fitness.first << " " << a->first->fitness.second << endl;
     // }
 
-    pair<Solution *, bool> * it;
+    Solution * selected;
 
-    while(!(p->allExplored())){
-        it = p->getRandomUnex();
-
-        vector<Solution *> neighborhood = getNeighborhood(it->first, neighborhood_size);
+    while(!(p->allExplored()) && countRevalue < stop_criteria){
+        selected = p->getRandomUnex();
+        if (selected == nullptr) {
+            cout << "Null Pointer Found" << endl;
+            break;
+        }
+        
+        vector<Solution *> neighborhood = getNeighborhood(selected, neighborhood_size);
 
         for(int i = 0; i < neighborhood.size(); i++){
             p->adicionarSol(neighborhood[i]);
         }
-        it->second = true; //It is possible that *it is not the same at the end of neighborhood insertion
+        p->markExplored(selected);
 
         for(auto p: neighborhood){
             delete p;
@@ -31,11 +35,14 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
         neighborhood.clear();
     }
 
-    vector<Solution *> * result;
+    vector<Solution *> * result = new vector<Solution*>();
 
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
         result->push_back((i)->first);
     }
+
+    p->clear();
+    delete p;
 
     return result;
 }

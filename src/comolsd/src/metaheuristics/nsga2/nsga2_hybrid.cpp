@@ -8,6 +8,7 @@
 #include "../../../headers/global_modules/genetic_operators/mutation.h"
 #include "../../../headers/global_modules/genetic_operators/crossover.h"
 #include "../../../headers/global_modules/local_search/pareto_ls.h"
+#include "../../../headers/global_modules/local_search/anytime_pls.h"
 #include "../../../headers/metaheuristics/nsga2/modules/binary_tournament.h"
 #include "../../../headers/metaheuristics/nsga2/modules/crowding_distance.h"
 #include "../../../headers/metaheuristics/nsga2/modules/non_dominated_sorting.h"
@@ -16,10 +17,11 @@
 
 #include "../../../headers/global_modules/dominates.h"
 #include "../../../headers/global_modules/isEqual.h"
-#include "../../../headers/metaheuristics/nsga2/nsga2_pls.h"
+#include "../../../headers/metaheuristics/nsga2/nsga2_hybrid.h"
 #include "../../../headers/globals.h"
 
-vector<Solution*> nsga2_pls(vector<Solution>& pop){
+vector<Solution*> nsga2_hybrid(vector<Solution>& pop,
+  function<vector<Solution*>*(vector<Solution*>)> local_search){
 
   vector<Solution*> * population = new vector<Solution*>();
 
@@ -45,7 +47,7 @@ vector<Solution*> nsga2_pls(vector<Solution>& pop){
 
   while(countRevalue < stop_criteria){
 
-    infoRunNSGA2 << "Generation " << generation << " | Revalues: " << countRevalue << " | GridSize: " << pareto->getSize() << endl;
+    infoRunNSGA2 << "Generation " << generation << " | Revalues: " << countRevalue << " | GridSize: " << pareto->getSize();
 
     // cout << "======================= GENERATION: " << generation << "=======================" << endl << endl;
 
@@ -166,26 +168,28 @@ vector<Solution*> nsga2_pls(vector<Solution>& pop){
     delete fronts;
 
     if((static_cast<double>(rand()) / RAND_MAX) < ls_prob){
-      vector<Solution *> * newPopulation = pareto_ls(*population);
-  
+      infoRunNSGA2 << " | LOCAL SEARCH EXECUTED";
+      vector<Solution *> * newPopulation = local_search(*population);      
+
       for(auto i : *population){
         delete i;
       }
       population->clear();
-  
+
       while(newPopulation->size() > size_population){
         int r = rand() % newPopulation->size();
         delete (*newPopulation)[r];
         newPopulation->erase(next(newPopulation->begin(), r));
       }
-  
+
       *population = *newPopulation;
-  
+      
       delete newPopulation;
     }
 
     generation++;
-    ls_prob += countRevalue / stop_criteria;
+    infoRunNSGA2 << endl;
+    ls_prob = ((double) countRevalue) / ((double) stop_criteria);
   }
   
   infoRunNSGA2.close();

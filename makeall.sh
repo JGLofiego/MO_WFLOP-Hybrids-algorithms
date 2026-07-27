@@ -5,7 +5,7 @@ directories=(
 )
 
 output_files=(
-    "moead_pls"
+    "main"
 )
 
 destination="./scripts/exe"
@@ -44,7 +44,7 @@ cd .. || { echo "Error returning to './scripts'"; exit 1; }
 scripts_dir="./smaller_scripts"
 scripts=(
     "create_folders.sh"
-    "moead_pls.sh"
+    "run.sh"
 )
 
 if [[ ! -d "$scripts_dir" ]]; then

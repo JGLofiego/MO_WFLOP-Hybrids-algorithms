@@ -16,6 +16,48 @@
 
 using namespace std;
 
+double ohvc(pair<Solution*, bool> const & s, pair<Solution*, bool> const & s_){
+    return abs((s.first->fitness.first - s_.first->fitness.first) * (s_.first->fitness.second - s.first->fitness.second));
+};
+double ParetoSetLS::ohiv(pair<Solution *, bool> a){
+    double s_value = a.first->fitness.second;
+    Solution s_inf = *a.first;
+    Solution s_sup = *a.first;
+    s_inf.fitness.second = 0.0;
+    s_sup.fitness.second = 2.0 * s_value;
+
+
+    list<pair<Solution *, bool>>::iterator it = sol.begin();
+    while(it != sol.end()){
+        if (it->first->fitness.second > s_value){
+            if(it->first->fitness.second <= s_sup.fitness.second){
+                s_sup = *it->first; 
+            }
+        } else if (it->first->fitness.second < s_value){
+            if(it->first->fitness.second >= s_inf.fitness.second){
+                s_inf = *it->first; 
+            }
+        }
+        it++;
+    }
+
+    if(s_inf.fitness.second == 0){
+        const pair<Solution *, bool> S_SUP = make_pair<Solution*, bool>(&(s_sup), false);
+        return 2 * ohvc(a, S_SUP);
+    }
+
+    if(s_sup.fitness.second == 2 * s_value){
+        const pair<Solution *, bool> S_INF = make_pair<Solution*, bool>(&(s_inf), false);
+        return 2 * ohvc(S_INF, a);
+    }
+
+    const pair<Solution *, bool> S_SUP = make_pair<Solution*, bool>(&(s_sup), false);
+    const pair<Solution *, bool> S_INF = make_pair<Solution*, bool>(&(s_inf), false);
+
+
+    return ohvc(a, S_SUP) + ohvc(S_INF, a);
+};
+
 struct P {
     Solution solution;
     bool checked;
@@ -197,27 +239,82 @@ bool ParetoSetLS::confereGrid() {
     return s == sol.size();
 }
 
-pair<Solution *, bool> * ParetoSetLS::getRandomUnex(){
-    int size = sol.size();
+Solution * ParetoSetLS::getRandomUnex(){
+    vector<int> indexes;
 
-    int r = rand() % size;
+    int size = sol.size();
 
     auto it = sol.begin();
 
-    for(int i = 0; i < r; i++){
+    for(int i = 0; i < size; i++){
+        if(!it->second){
+            indexes.push_back(i);
+        }
         it++;
     }
 
-    do{
-        if(it == sol.end()){
-            it = sol.begin();
-        }else{
-            it++;
-        }
-    } while((it)->second);
+    if (indexes.empty()) {
+        return nullptr;
+    }
 
-    return &(*it);
+    int r = rand() % indexes.size();
+
+    it = sol.begin();
+
+    for(int j = 0; j < indexes[r]; j++){
+        it++;
+    }
+
+    return it->first;
 }
+
+bool ParetoSetLS::markExplored(Solution *s) {
+    for (auto &entry : sol) {
+        if (entry.first == s) {
+            entry.second = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+Solution * ParetoSetLS::getNext(){
+    double max_ohiv;
+    Solution * nextOne;
+
+    auto it = sol.begin();
+    while(it != sol.end() && it->second){
+        it++;
+    }
+    
+    nextOne = it->first;
+    max_ohiv = ohiv(*it);
+
+    double aux;
+
+    while(it != sol.end()){
+        if(!it->second){
+            aux = ohiv(*it);
+            if(aux > max_ohiv){
+                max_ohiv = aux;
+                nextOne = it->first;
+            }
+        }
+        it++;
+    }
+
+    return nextOne;
+};
+
+void ParetoSetLS::unexploreAll(){
+    auto it = sol.begin();
+
+    while(it != sol.end()){
+        it->second = false;
+        it++;
+    }
+};
+
 
 
 
