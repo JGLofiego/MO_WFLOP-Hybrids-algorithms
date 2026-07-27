@@ -3,6 +3,7 @@
 
 vector<Solution *> * pareto_ls(vector<Solution*> population){
     ParetoSetLS* p = new ParetoSetLS();
+    int start_iter = countRevalue;
 
     for(int i = 0; i < population.size(); i++){
         p->adicionarSol(population[i]);
@@ -15,7 +16,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
 
     Solution * selected;
 
-    while(!(p->allExplored()) && countRevalue < stop_criteria){
+    while(countRevalue - start_iter < max_iter_ls && countRevalue < stop_criteria && !(p->allExplored())){
         selected = p->getRandomUnex();
         if (selected == nullptr) {
             cout << "Null Pointer Found" << endl;
