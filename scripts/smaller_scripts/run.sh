@@ -3,15 +3,17 @@
 ALGO="${ALGO:-nsga2_hybrid}"
 LS="${LS:-apls}"
 
+ALGOLS="${ALGO}_${LS}"
+
 instance="${1:-A}" 
 run="${2:-1}"
 
 echo "Executing $ALGO with: Instance=$instance, Run=$run"
 
-log_dir="../dataset/${ALGO}_${LS}/$instance/$run"
+log_dir="../dataset/${ALGOLS}/$instance/$run"
 log_file="$log_dir/log.txt"
 
-path="../dataset/${ALGO}_${LS}/$instance/$run/"
+path="../dataset/${ALGOLS}/$instance/$run/"
 
 angle=0.0
 wind=0.0
