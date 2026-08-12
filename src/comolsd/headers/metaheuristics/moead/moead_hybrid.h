@@ -2,6 +2,7 @@
 #define MOEAD_HYBRID_H
 
 #include <vector>
+#include <functional>
 #include <utility>
 #include "../../global_modules/generate_initial_population/generate_rSolution.h"
 

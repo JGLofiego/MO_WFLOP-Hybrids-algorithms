@@ -3,6 +3,7 @@
 
 #include "../../global_modules/generate_initial_population/generate_rSolution.h"
 #include "./nsga2.h"
+#include <functional>
 #include <vector>
 using namespace std;
 
