@@ -18,7 +18,7 @@ echo "Using batch: ${batch[@]}"
 for instance in "${batch[@]}"; do
 
   for i in {1..20}; do
-    log_file="./logs/${ALGO}_${instance}.txt"
+    log_file="./logs/${ALGO}_${LS}/${ALGO}_${LS}_${instance}.txt"
 
     echo "Using instance: $instance, Run: $i"
     echo "Appending to log file: $log_file"

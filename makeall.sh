@@ -44,6 +44,7 @@ cd .. || { echo "Error returning to './scripts'"; exit 1; }
 scripts_dir="./smaller_scripts"
 scripts=(
     "create_folders.sh"
+    "create_log_folders.sh"
     "run.sh"
 )
 

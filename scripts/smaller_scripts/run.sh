@@ -8,10 +8,10 @@ run="${2:-1}"
 
 echo "Executing $ALGO with: Instance=$instance, Run=$run"
 
-log_dir="../dataset/$ALGO_$LS/$instance/$run"
+log_dir="../dataset/${ALGO}_${LS}/$instance/$run"
 log_file="$log_dir/log.txt"
 
-path="../dataset/$ALGO_$LS/$instance/$run/"
+path="../dataset/${ALGO}_${LS}/$instance/$run/"
 
 angle=0.0
 wind=0.0
