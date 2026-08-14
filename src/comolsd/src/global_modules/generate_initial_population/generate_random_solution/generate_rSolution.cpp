@@ -27,10 +27,13 @@ float power_alt(float& wind, float& power, float& tc){
 
 double calculate_cost(Solution& sol){
     double acc = 0;
+    double cost;
 
     for(int z = 0; z < num_zones; z++){
         for(int i = 0; i < sol.turbines[z].size(); i++){
-            acc += foundations[sol.turbines[z][i].zone][sol.turbines[z][i].index].cost;//Acumulador recebe o custo da posição em que turbina se encontra
+            cost = foundations[sol.turbines[z][i].zone][sol.turbines[z][i].index].cost;
+            sol.turbines[z][i].costCalculated = cost;
+            acc += cost;//Acumulador recebe o custo da posição em que turbina se encontra
         }
     }
 
@@ -105,7 +108,8 @@ double calculate_interference(Turbine& t_initial, Turbine& t_interfered){
 }
 
 double calculate_power(Solution& sol){
-    double power = 0;
+    double powerAcc = 0;
+    double power;
     double deficit, windResulted, result;
 
     // Para cada turbina móvel [z][i] vai calcular o deficit resultante que incide nela, tanto pelas outras turbinas móveis, quanto pelas fixas.
@@ -136,7 +140,10 @@ double calculate_power(Solution& sol){
             // cout << "Velocidade do vento em "<< sol.turbines[i].id << " : " <<
             //  wind << " produz " << power_produced(wind, sol.turbines[i]) << endl;
 
-            power += power_produced(windResulted, sol.turbines[z][i]);
+            power = power_produced(windResulted, sol.turbines[z][i]);
+            sol.turbines[z][i].powerCalculated = power;
+
+            powerAcc += power;
         }
     }
 
@@ -162,10 +169,10 @@ double calculate_power(Solution& sol){
         // Wind resulted according to [2]
         windResulted = wind * (1 - sqrt(deficit));
 
-        power += power_produced(windResulted, fixd[i]);
+        powerAcc += power_produced(windResulted, fixd[i]);
     }
 
-    sol.fitness.second = power;
+    sol.fitness.second = powerAcc;
     return power;
 }
 
