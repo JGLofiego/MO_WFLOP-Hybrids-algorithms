@@ -20,23 +20,27 @@ int neighborhood_size = 10;
 
 int main(int argc, char* argv[]){
     
-    if(argc == 2){
-        instance = argv[1];
-    } else if (argc > 2){
+    if (argc > 2){
         instance = argv[1];
         root_folder = argv[2];
-    } else if (argc > 5){
-        instance = argv[1];
-        root_folder = argv[2];
-        neighborhood_size = stoi(argv[5]);
     }
+    
+    if (argc > 5){
+        algorithm = argv[5];
+    }
+    
     if(argc > 6){
-        algorithm = argv[6];
+        local_search_type = argv[6];
     }
+    
     if(argc > 7){
-        local_search_type = argv[7];
+        neighborhood_size = stoi(argv[7]);
     }
-
+    
+    if(argc > 8){
+        max_iter_ls = stoi(argv[8]);
+    }
+    
     string path;
     
     int num_neighbors = 10;
@@ -65,7 +69,7 @@ int main(int argc, char* argv[]){
     string pathHvParams = pathAbsolute + "/hyp_ind_param_NONORM.txt";
     string refSet = pathAbsolute + "/dummy_ref.txt";
 
-    string param = instance + "_" + algorithm + "_" + local_search_type + "_" + "1000000" + ".txt";
+    string param = instance + "_" + algorithm + "_" + "1000000" + ".txt";
 
     auto _ = system((pathHypervolume + " " + pathHvParams + " " + param + " " + refSet + " " + "hv.out").c_str());
 
