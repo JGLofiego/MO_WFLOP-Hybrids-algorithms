@@ -7,6 +7,8 @@
 #include "../headers/global_modules/generate_initial_population/generate_rSolution.h"
 
 #include "../headers/global_modules/genetic_operators/mutation.h"
+#include "../headers/global_modules/genetic_operators/mutationCostBased.h"
+#include "../headers/global_modules/genetic_operators/mutationPowerBased.h"
 #include "../headers/global_modules/genetic_operators/crossover.h"
 
 #include "../headers/global_modules/isEqual.h"

@@ -26,7 +26,8 @@
 using namespace std;
 
 void moead_hybrid(vector<Solution>& population, 
-  function<vector<Solution*>*(vector<Solution*>)> local_search){
+  function<vector<Solution*>*(vector<Solution*>, bool)> local_search,
+  bool improvedNeighbor){
 
   //Initializing the random number generator 
   random_device rd;
@@ -143,7 +144,7 @@ void moead_hybrid(vector<Solution>& population,
         pop->push_back(*it);
       }
 
-      vector<Solution *> * newPopulation = local_search(*pop);      
+      vector<Solution *> * newPopulation = local_search(*pop, improvedNeighbor);      
       pop->clear();
 
       for(auto p: *newPopulation){

@@ -1,9 +1,14 @@
 #include "../../headers/global_modules/local_search/anytime_pls.h"
 #include "../../headers/instance_info.h"
 
-vector<Solution *> * anytime_pls(vector<Solution*> population){
+vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
     ParetoSetLS* p = new ParetoSetLS();
     int start_iter = countRevalue;
+    auto neighborhoodFunction = getNeighborhoodStd;
+
+    if(improved){
+        neighborhoodFunction = getNeighborhoodImproved;
+    }
 
     int neighborhood_size = 163;
 
@@ -17,7 +22,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
     while(countRevalue - start_iter < max_iter_ls && countRevalue < stop_criteria && !(p->allExplored())){
         selected = p->getNext();
 
-        vector<Solution *> neighborhood = getNeighborhood(selected, neighborhood_size);
+        vector<Solution *> neighborhood = neighborhoodFunction(selected, neighborhood_size);
 
         bool added = false;
 
@@ -54,7 +59,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population){
     while(!(p->allExplored()) && countRevalue < stop_criteria){
         selected = p->getNext();
 
-        vector<Solution *> neighborhood = getNeighborhood(selected, neighborhood_size);
+        vector<Solution *> neighborhood = neighborhoodFunction(selected, neighborhood_size);
 
         bool added = false;
 

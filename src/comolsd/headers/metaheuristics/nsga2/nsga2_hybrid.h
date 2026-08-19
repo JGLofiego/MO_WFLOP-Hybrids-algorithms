@@ -8,7 +8,8 @@
 using namespace std;
 
 vector<Solution*> nsga2_hybrid(vector<Solution>& pop,
-    function<vector<Solution*>*(vector<Solution*>)>);
+    function<vector<Solution*>*(vector<Solution*>, bool)>,
+    bool improvedNeighbor = false);
 
 extern ofstream infoRunNSGA2;
 

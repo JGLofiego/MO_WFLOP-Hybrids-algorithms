@@ -1,9 +1,14 @@
 #include "../../headers/global_modules/local_search/pareto_ls.h"
 #include "../../headers/instance_info.h"
 
-vector<Solution *> * pareto_ls(vector<Solution*> population){
+vector<Solution *> * pareto_ls(vector<Solution*> population, bool improved){
     ParetoSetLS* p = new ParetoSetLS();
     int start_iter = countRevalue;
+    auto neighborHoodFunction = getNeighborhoodStd;
+    
+    if(improved){
+        neighborHoodFunction = getNeighborhoodImproved;
+    }
 
     for(int i = 0; i < population.size(); i++){
         p->adicionarSol(population[i]);
@@ -23,7 +28,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population){
             break;
         }
         
-        vector<Solution *> neighborhood = getNeighborhood(selected, 163);
+        vector<Solution *> neighborhood = neighborHoodFunction(selected, 163);
 
         for(int i = 0; i < neighborhood.size(); i++){
             p->adicionarSol(neighborhood[i]);

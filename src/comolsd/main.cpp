@@ -34,6 +34,15 @@ int main(int argc, char* argv[]){
     string path;
 
     int num_neighbors = 10;
+    bool improvedNeighbor = false;
+
+    // Parse flag-based arguments
+    for(int i = 1; i < argc; i++){
+        string arg = argv[i];
+        if(arg == "--improvedNeighbor"){
+            improvedNeighbor = true;
+        }
+    }
 
     get_instance_info(argc, argv);
 
@@ -57,9 +66,9 @@ int main(int argc, char* argv[]){
     auto lsFunction = getLocalSearchFunction(lsType);
 
     if (algorithm == "nsga2_hybrid"){
-        nsga2_hybrid(population, lsFunction);
+        nsga2_hybrid(population, lsFunction, improvedNeighbor);
     } else if (algorithm == "moead_hybrid"){
-        moead_hybrid(population, lsFunction);
+        moead_hybrid(population, lsFunction, improvedNeighbor);
     } else {
         cerr << "Unknown algorithm: " << algorithm << endl;
         return 1;

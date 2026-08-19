@@ -12,7 +12,7 @@ LocalSearchType parseLocalSearchType(const string& typeStr){
     throw invalid_argument("Unknown local search type: " + typeStr);
 }
 
-function<vector<Solution*>*(vector<Solution*>)> getLocalSearchFunction(LocalSearchType type){
+function<vector<Solution*>*(vector<Solution*>, bool)> getLocalSearchFunction(LocalSearchType type){
     switch(type){
         case LocalSearchType::ParetoLS:
             return pareto_ls;
@@ -20,7 +20,7 @@ function<vector<Solution*>*(vector<Solution*>)> getLocalSearchFunction(LocalSear
             return anytime_pls;
         case LocalSearchType::None:
         default:
-            return [](vector<Solution*> pop) -> vector<Solution*>* {
+            return [](vector<Solution*> pop, bool) -> vector<Solution*>* {
                 return new vector<Solution*>(pop);
             };
     }

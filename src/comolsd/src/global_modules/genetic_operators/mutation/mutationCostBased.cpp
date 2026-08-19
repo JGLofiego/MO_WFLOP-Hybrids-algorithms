@@ -9,7 +9,7 @@ the probability of improving the result is higher.
 */
 
 //Function to find the index of a turbine (searching for its id) within of a vector of turbines in zone i.
-int find_index(vector<Turbine> &vec, int value){
+static int find_index(vector<Turbine> &vec, int value){
   for(int i = 0; i < vec.size(); i++){
     if(vec[i].id == value){
       return i;
@@ -19,10 +19,10 @@ int find_index(vector<Turbine> &vec, int value){
   return -1;
 }
 
-void mutateTurb(Solution &solution, int zone, int index){
+static void mutateTurb(Solution &solution, int zone, int index){
 
     int zone_size = solution.grid[zone].size();
-    int rand_intA = index;
+    int rand_intA = solution.turbines[zone][index].index;
     int rand_intB;
     int indexA = -1;
     int indexB = -1;
@@ -60,16 +60,16 @@ void mutateTurb(Solution &solution, int zone, int index){
 
 void mutationCostBased(Solution &solution){
 
-  int z_high = -1;
-  int i_high = -1;
-  double cost_high = 0;
+  int z_high = 0;
+  int i_high = 0;
+  double cost_high = solution.turbines[0][0].costCalculated * -1.0;
 
   for(int z = 0; z < solution.turbines.size(); z++){
     for(int i = 0; i < solution.turbines[z].size(); i++){
-        if(cost_high < solution.turbines[z][i].costCalculated){
+        if(cost_high < (solution.turbines[z][i].costCalculated * -1.0)){
             z_high = z;
             i_high = i;
-            cost_high = solution.turbines[z][i].costCalculated;
+            cost_high = solution.turbines[z][i].costCalculated * -1.0;
         }
     }
   }

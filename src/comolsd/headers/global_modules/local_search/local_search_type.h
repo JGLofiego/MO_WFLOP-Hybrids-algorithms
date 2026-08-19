@@ -13,6 +13,6 @@ enum class LocalSearchType {
 };
 
 LocalSearchType parseLocalSearchType(const std::string& typeStr);
-std::function<std::vector<Solution*>*(std::vector<Solution*>)> getLocalSearchFunction(LocalSearchType type);
+std::function<std::vector<Solution*>*(std::vector<Solution*>, bool)> getLocalSearchFunction(LocalSearchType type);
 
 #endif

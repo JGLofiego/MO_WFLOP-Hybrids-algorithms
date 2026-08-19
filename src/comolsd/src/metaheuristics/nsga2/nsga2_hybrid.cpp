@@ -21,7 +21,8 @@
 #include "../../../headers/globals.h"
 
 vector<Solution*> nsga2_hybrid(vector<Solution>& pop,
-  function<vector<Solution*>*(vector<Solution*>)> local_search){
+  function<vector<Solution*>*(vector<Solution*>, bool)> local_search,
+  bool improvedNeighbor){
 
   vector<Solution*> * population = new vector<Solution*>();
 
@@ -169,7 +170,7 @@ vector<Solution*> nsga2_hybrid(vector<Solution>& pop,
 
     if((static_cast<double>(rand()) / RAND_MAX) < ls_prob){
       infoRunNSGA2 << " | LOCAL SEARCH EXECUTED";
-      vector<Solution *> * newPopulation = local_search(*population);      
+      vector<Solution *> * newPopulation = local_search(*population, improvedNeighbor);      
 
       for(auto i : *population){
         delete i;

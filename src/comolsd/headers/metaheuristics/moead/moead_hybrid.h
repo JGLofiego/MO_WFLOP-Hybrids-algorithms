@@ -7,7 +7,8 @@
 #include "../../global_modules/generate_initial_population/generate_rSolution.h"
 
 void moead_hybrid(std::vector<Solution>& population, 
-    function<vector<Solution*>*(vector<Solution*>)>);
+    function<vector<Solution*>*(vector<Solution*>, bool)>,
+    bool improvedNeighbor = false);
 
 extern ofstream infoRun;
 

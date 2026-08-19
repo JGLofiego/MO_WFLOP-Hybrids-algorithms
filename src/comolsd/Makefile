@@ -34,6 +34,8 @@ SRC_FILES = \
     $(POPULATION_DIR)/population.cpp \
     $(RSOLUTION_DIR)/generate_rSolution.cpp \
     $(META_DIR)/mutation.cpp \
+    $(META_DIR)/mutationCostBased.cpp \
+    $(META_DIR)/mutationPowerBased.cpp \
     $(CROSS_DIR)/crossover.cpp \
     $(SRC_DIR)/metaheuristics/moead/modules/generate_neighborhood.cpp \
     $(SRC_DIR)/metaheuristics/moead/modules/generate_weight_vectors.cpp \
