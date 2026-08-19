@@ -2,8 +2,12 @@
 
 ALGO="${ALGO:-nsga2_hybrid}"
 LS="${LS:-apls}"
+IMPROVED_NEIGHBOR="${IMPROVED_NEIGHBOR:-false}"
 
 ALGOLS="${ALGO}_${LS}"
+if [[ "$IMPROVED_NEIGHBOR" == "true" ]]; then
+    ALGOLS="${ALGOLS}_imprvNeighb"
+fi
 
 instance="${1:-A}" 
 run="${2:-1}"
@@ -28,15 +32,22 @@ fi
 
 mkdir -p "$log_dir"
 
+# Build command with optional flag
+cmd="./exe/main \"$instance\" \"$path\" \"$angle\" \"$wind\" \"$ALGO\" \"$LS\""
+if [[ "$IMPROVED_NEIGHBOR" == "true" ]]; then
+    cmd="$cmd --improvedNeighbor"
+fi
+
 {
     echo "============================== LOG =============================="
     echo "Instance: $instance"
     echo "Run: $run"
     echo "Metaheuristic: $ALGO"
     echo "Local Search: $LS"
+    echo "Improved Neighbor: $IMPROVED_NEIGHBOR"
     echo "Execution started at: $(date)"
 
-    { time ./exe/main "$instance" "$path" "$angle" "$wind" "$ALGO" "$LS"; } 2>&1
+    { time eval "$cmd"; } 2>&1
 
     echo "Execution ended at: $(date)"
     echo "================================================================="

@@ -2,9 +2,14 @@
 
 ALGO="${ALGO:-nsga2_hybrid}"
 LS="${LS:-apls}"
+IMPROVED_NEIGHBOR="${IMPROVED_NEIGHBOR:-false}"
 export LS
+export IMPROVED_NEIGHBOR
 
 ALGOLS="${ALGO}_${LS}"
+if [[ "$IMPROVED_NEIGHBOR" == "true" ]]; then
+    ALGOLS="${ALGOLS}_imprvNeighb"
+fi
 
 script2="./smaller_scripts/run.sh"
 
