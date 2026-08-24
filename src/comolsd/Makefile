@@ -71,8 +71,10 @@ SRC_FILES = \
     instance_info.cpp
 
 MAIN_FILE = main.cpp
+TEST_MAIN_FILE = main_test.cpp
 
 OUTPUT = main
+TEST_OUTPUT = main_test
 
 $(OUTPUT): $(SRC_FILES) $(MAIN_FILE)
 	@echo Starting compilation of $(OUTPUT)...
@@ -86,3 +88,11 @@ clean:
 
 rebuild: clean $(OUTPUT)
 	@echo Rebuild completed.
+
+$(TEST_OUTPUT): $(SRC_FILES) $(TEST_MAIN_FILE)
+	@echo Starting compilation of $(TEST_OUTPUT)...
+	@$(CXX) $(CXXFLAGS) -o $(TEST_OUTPUT) $(TEST_MAIN_FILE) $(SRC_FILES)
+	@echo Compilation completed.
+
+test: $(TEST_OUTPUT)
+	@echo Test compilation completed.
