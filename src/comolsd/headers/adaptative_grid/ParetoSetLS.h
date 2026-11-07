@@ -27,6 +27,10 @@ class ParetoSetLS {
         void updateGrid();
         void reiniciarRanges();
 
+        // New: tracks highest values for normalization
+        double maxCost;
+        double maxEnergy;
+
     public:
         ParetoSetLS();
         virtual ~ParetoSetLS();
@@ -40,13 +44,21 @@ class ParetoSetLS {
         Solution* getRandomUnex();
         bool markExplored(Solution * s);
         Solution * getNext();
-        
+
         virtual bool adicionarSol(Solution *s);
         int getSize();
         pair<Solution *, bool>getSolucao(int p);
         void clear();
         void unexploreAll();
         bool confereGrid();
+
+        // New: getters for maxima
+        double getMaxCost();
+        double getMaxEnergy();
+
+        // New: Pareto direction vector calculation
+        // Returns pair<double, double> (lambdaC, lambdaP)
+        pair<double, double> calculate_pareto_dir_vec();
 };
 
 #endif

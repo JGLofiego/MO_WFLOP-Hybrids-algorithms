@@ -44,7 +44,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population, bool improved){
     vector<Solution *> * result = new vector<Solution*>();
 
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
-        result->push_back((i)->first);
+        result->push_back(new Solution(*(i)->first));
     }
 
     p->clear();

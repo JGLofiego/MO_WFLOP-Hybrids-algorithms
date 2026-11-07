@@ -173,7 +173,7 @@ double calculate_power(Solution& sol){
     }
 
     sol.fitness.second = powerAcc;
-    return power;
+    return powerAcc;
 }
 
 // Função para gerar uma solução aleatória, retorna uma matriz booleana a qual false = sem turbina, e true = turbina

@@ -19,6 +19,7 @@ CXXFLAGS = -std=c++17 -Werror -O2 -g\
 SRC_DIR = src
 HEADER_DIR = headers
 LS_DIR = $(SRC_DIR)/global_modules/local_search
+LS_HEADERS_DIR = $(HEADER_DIR)/global_modules/local_search
 META_DIR = $(SRC_DIR)/global_modules/genetic_operators/mutation
 CROSS_DIR = $(SRC_DIR)/global_modules/genetic_operators/crossover
 RSOLUTION_DIR = $(SRC_DIR)/global_modules/generate_initial_population/generate_random_solution
@@ -64,17 +65,22 @@ SRC_FILES = \
     ${SRC_DIR}/metaheuristics/comolsd/modules/min_max_cost.cpp \
     ${SRC_DIR}/metaheuristics/comolsd/modules/normalize_objectives.cpp \
     ${SRC_DIR}/metaheuristics/comolsd/comolsd.cpp \
+    ${LS_DIR}/ils.cpp \
+    ${LS_DIR}/ils_decomposition.cpp \
     ${LS_DIR}/neighborhood.cpp \
     ${LS_DIR}/pareto_ls.cpp \
     ${LS_DIR}/anytime_pls.cpp \
     ${LS_DIR}/local_search_factory.cpp \
+    ${LS_DIR}/wpPS_local_search.cpp \
     instance_info.cpp
 
 MAIN_FILE = main.cpp
 TEST_MAIN_FILE = main_test.cpp
+ILS_D_TEST_FILE = main_test_ilsd.cpp
 
 OUTPUT = main
 TEST_OUTPUT = main_test
+ILS_D_TEST_OUTPUT = main_test_ilsd
 
 $(OUTPUT): $(SRC_FILES) $(MAIN_FILE)
 	@echo Starting compilation of $(OUTPUT)...
@@ -96,3 +102,11 @@ $(TEST_OUTPUT): $(SRC_FILES) $(TEST_MAIN_FILE)
 
 test: $(TEST_OUTPUT)
 	@echo Test compilation completed.
+
+$(ILS_D_TEST_OUTPUT): $(SRC_FILES) $(ILS_D_TEST_FILE)
+	@echo Starting compilation of $(ILS_D_TEST_OUTPUT)...
+	@$(CXX) $(CXXFLAGS) -o $(ILS_D_TEST_OUTPUT) $(ILS_D_TEST_FILE) $(SRC_FILES)
+	@echo Compilation completed.
+
+test_ilsd: $(ILS_D_TEST_OUTPUT)
+	@echo ILS/D test compilation completed.

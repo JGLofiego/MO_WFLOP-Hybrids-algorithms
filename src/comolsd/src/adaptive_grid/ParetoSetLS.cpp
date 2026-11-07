@@ -114,6 +114,9 @@ void ParetoSetLS::reiniciarRanges() {
 ParetoSetLS::ParetoSetLS() {
     reiniciarRanges();
     memset(frequencia, 0, sizeof(frequencia));
+    // Initialize maxima for normalization
+    maxCost = -1.0;
+    maxEnergy = -1.0;
 }
 
 ParetoSetLS::~ParetoSetLS() {
@@ -194,6 +197,14 @@ bool ParetoSetLS::adicionarSol(Solution *s) {
         rangeNovo[k].max = max(rangeNovo[k].max, getObj(t, k));
     }
 
+    // Update maxima for normalization
+    if (abs(t->fitness.first) > maxCost) {
+        maxCost = abs(t->fitness.first);
+    }
+    if (t->fitness.second > maxEnergy) {
+        maxEnergy = t->fitness.second;
+    }
+
     // se houve uma mudanca grande nos ranges (maior que 10% valor), atualizar o grid
     for (int k = 0; k < NUMOBJETIVOS; k++) {
         if (fabs(rangeNovo[k].min - rangeAtual[k].min) > 0.1 * rangeAtual[k].min ||
@@ -228,6 +239,7 @@ void ParetoSetLS::clear() {
     while (i != sol.end()) {
         j = i;
         i++;
+        delete j->first;
     }
     sol.clear();
     g.clearGrid();
@@ -313,9 +325,74 @@ void ParetoSetLS::unexploreAll(){
         it->second = false;
         it++;
     }
-};
+}
 
+// Getter implementations for maxCost and maxEnergy
+double ParetoSetLS::getMaxCost() {
+    return maxCost;
+}
 
+double ParetoSetLS::getMaxEnergy() {
+    return maxEnergy;
+}
 
+// Pareto direction vector calculation
+// Returns pair<double, double> (lambdaC, lambdaP) where:
+//   lambdaC = DeltaP / (DeltaC + DeltaP)
+//   lambdaP = DeltaC / (DeltaC + DeltaP)
+// and lambdaC + lambdaP = 1
+// The archive is expected to be sorted by cost (f1) ascending
+
+pair<double, double> ParetoSetLS::calculate_pareto_dir_vec() {
+    vector<Solution*> archive;
+    for (auto it = getBegin(); it != getEnd(); ++it) {
+        archive.push_back(it->first);
+    }
+
+    // Sort archive by cost (f1) ascending
+    sort(archive.begin(), archive.end(), [](const Solution* a, const Solution* b) {
+        return a->fitness.first > b->fitness.first;
+    });
+
+    int n = archive.size();
+    if (n < 2) {
+        // Not enough solutions to compute a gap
+        return make_pair(0.5, 0.5);
+    }
+
+    // Compute gaps between consecutive solutions
+    double maxDeltaC = -1.0;
+    double maxDeltaP = -1.0;
+
+    for (int i = 0; i < n - 1; i++) {
+        double deltaC = abs(archive[i+1]->fitness.first - archive[i]->fitness.first);
+        double deltaP = abs(archive[i+1]->fitness.second - archive[i]->fitness.second);
+
+        // For normalization, use relative gaps (absolute gap / range)
+        // Guard against division by zero
+        double relDeltaC = deltaC / maxCost;
+        double relDeltaP = deltaP / maxEnergy;
+
+        if (relDeltaC > maxDeltaC) {
+            maxDeltaC = relDeltaC;
+            maxDeltaP = relDeltaP;
+        }
+    }
+
+    // Compute direction vector weights
+    double lambdaC = maxDeltaP / (maxDeltaC + maxDeltaP);
+    double lambdaP = maxDeltaC / (maxDeltaC + maxDeltaP);
+
+    // Normalize to ensure lambdaC + lambdaP = 1
+    // if (lambdaC + lambdaP > 0) {
+    //     double scale = 1.0 / (lambdaC + lambdaP);
+    //     lambdaC *= scale;
+    //     lambdaP *= scale;
+    // }
+
+    // cout << "PARETO DIR VEC: " << lambdaC << " " << lambdaP << endl;
+
+    return make_pair(lambdaC, lambdaP);
+}
 
 #endif

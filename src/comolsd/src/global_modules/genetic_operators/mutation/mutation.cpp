@@ -77,10 +77,12 @@ void mutationAux(Solution &solution, int zone){
     solution.grid[zone][rand_intB] = geneA;
 }
 
-void mutation(Solution &solution){
-  
-  int i = rand() % solution.turbines.size();
-  mutationAux(solution, i);
+void mutationN(Solution &solution, int num_turb){
+
+  for(int i = 0; i < num_turb; i++){
+    int z = rand() % solution.turbines.size();
+    mutationAux(solution, z);
+  }
 
   calculate_cost(solution);
   calculate_power(solution);
@@ -97,4 +99,8 @@ void mutation(Solution &solution){
   }
 
   delete sol;
+}
+
+void mutation(Solution &solution){
+  mutationN(solution, 1);
 }

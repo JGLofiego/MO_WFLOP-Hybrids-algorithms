@@ -48,20 +48,29 @@ int main(int argc, char* argv[]){
     int sum = 0;
     for(auto elem : turbines_per_zone)
         sum += elem;
-
-    cout << endl;
-    cout << "Number of subproblems: " << SIZE_OF_POPULATION << endl;
-    cout << "Number of neighbors: " << num_neighbors << endl;
-    cout << "Number of fixed turbines: " << fixd.size() << endl;
-    cout << "Number of mobile turbines: " << sum << endl;
-    cout << "Wind: " << wind << endl;
-    cout << "Angle: " << angle << endl;
-
-    cout << "Run time:" << endl;
     
     auto population = create_initial_population(SIZE_OF_POPULATION);
 
     LocalSearchType lsType = parseLocalSearchType(local_search_type);
     auto lsFunction = getLocalSearchFunction(lsType);
+
+    while(countRevalue < stop_criteria){
+        auto elementList = pareto->getElementos();
+        vector<Solution *> * elementVector = new vector<Solution*>();
+
+        for(Solution * sol: elementList){
+            elementVector->push_back(sol);
+        }
+
+
+        auto newPopulation = lsFunction(*elementVector, improvedNeighbor);
+
+        for(Solution * s : *newPopulation){
+            cout << s->fitness.first << " " << s->fitness.second << endl;
+        } cout << endl;
+
+        elementVector->clear();
+        delete elementVector;
+    }
     
 }

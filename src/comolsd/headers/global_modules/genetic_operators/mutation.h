@@ -6,5 +6,6 @@
 #include "../../adaptative_grid/BoundedParetoSet.h"
 
 void mutation(Solution &solution);
+void mutationN(Solution &solution, int num_turb);
 
 #endif 

@@ -18,14 +18,16 @@ vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
         
     Solution * selected;
 
+    bool can_continue = countRevalue - start_iter < max_iter_ls;
+
     // Stop on first solution "improved"
-    while(countRevalue - start_iter < max_iter_ls && countRevalue < stop_criteria && !(p->allExplored())){
+    while(can_continue && countRevalue < stop_criteria && !(p->allExplored())){
         selected = p->getNext();
 
         vector<Solution *> neighborhood = neighborhoodFunction(selected, neighborhood_size);
-
+        
         bool added = false;
-
+        
         for(int i = 0; i < neighborhood.size(); i++){
             if(dominatesP(*neighborhood[i], *selected)){
                 p->adicionarSol(neighborhood[i]);
@@ -41,26 +43,27 @@ vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
                 }
             }
         }
-
+        
         p->markExplored(selected);
-
+        
         for(auto p: neighborhood){
             delete p;
         }
         
         neighborhood.clear();
         countRevalue -= (neighborhood_size - 1);
+        can_continue = countRevalue - start_iter < max_iter_ls;
     }
 
     p->unexploreAll();
 
 
     // Stop on neighborhood fully explored
-    while(!(p->allExplored()) && countRevalue < stop_criteria){
+    while(can_continue && !(p->allExplored()) && countRevalue < stop_criteria){
         selected = p->getNext();
 
         vector<Solution *> neighborhood = neighborhoodFunction(selected, neighborhood_size);
-
+        can_continue = countRevalue - start_iter < max_iter_ls;
         bool added = false;
 
         for(int i = 0; i < neighborhood.size(); i++){
@@ -87,7 +90,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
     vector<Solution *> * result = new vector<Solution*>();
 
     for(auto i = p->getBegin(); i != p->getEnd(); i++){
-        result->push_back((i)->first);
+        result->push_back(new Solution(*(i)->first));
     }
 
     p->clear();

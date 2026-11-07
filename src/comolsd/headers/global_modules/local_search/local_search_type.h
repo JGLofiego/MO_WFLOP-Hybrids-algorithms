@@ -9,7 +9,9 @@
 enum class LocalSearchType {
     ParetoLS,
     AnytimePLS,
-    None
+    None,
+    ILSLocalSearch,     // NEW: ILS as local search
+    ILSDLocalSearch     // NEW: ILS/D as local search
 };
 
 LocalSearchType parseLocalSearchType(const std::string& typeStr);
