@@ -10,7 +10,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
         neighborhoodFunction = getNeighborhoodImproved;
     }
 
-    int neighborhood_size = 163;
+    int neighborhood_size = num_neighbors;
 
     for(int i = 0; i < population.size(); i++){
         p->adicionarSol(population[i]);
@@ -51,7 +51,7 @@ vector<Solution *> * anytime_pls(vector<Solution*> population, bool improved){
         }
         
         neighborhood.clear();
-        countRevalue -= (neighborhood_size - 1);
+        // countRevalue -= (neighborhood_size - 1);
         can_continue = countRevalue - start_iter < max_iter_ls;
     }
 

@@ -13,39 +13,57 @@ using namespace std;
 // Core: Turbine pressure calculation
 // ============================================================================
 
-// Calculate the marginal energy contribution of a turbine i
-// MPi = Eii + sum(Eij + Eji) for all j in S\{i}
 double calc_marginal_energy(Turbine& turb, Solution* s) {
-    // E_ii is the turbine's own production (without wake effects)
+    // E_ii is the turbine's own production (with the wake it receives)
     double own = turb.powerCalculated;
-
-    // E_ij + E_ji for all other mobile turbines j
-    double caused = 0.0;
-    double res;
+ 
+    // Energy lost by turbine 'target' because of the wake caused by turb
+    auto loss_on = [&](Turbine& target) -> double {
+        // Deficit that turb causes on target (E_ij)
+        double d = calculate_interference(turb, target);
+        if (d == 0.0) return 0.0;  // target is not in the wake of turb
+ 
+        // Quadratic deficit that target receives from everyone except turb
+        double deficit = 0.0;
+        double res;
+ 
+        for (auto& zone_turb : s->turbines) {
+            for (auto& t : zone_turb) {
+                if (t.id == turb.id || t.id == target.id) continue;
+                res = calculate_interference(t, target);
+                deficit += res * res;
+            }
+        }
+ 
+        for (auto& f : fixd) {
+            if (f.id == turb.id || f.id == target.id) continue;
+            res = calculate_interference(f, target);
+            deficit += res * res;
+        }
+ 
+        double wind_without = wind * (1.0 - min(sqrt(deficit), 1.0));
+        double wind_with    = wind * (1.0 - min(sqrt(deficit + d * d), 1.0));
+ 
+        return power_produced(wind_without, target) - power_produced(wind_with, target);
+    };
+ 
+    double loss = 0.0;
+ 
+    // Loss caused on the other mobile turbines
     for (auto& zone_turb : s->turbines) {
         for (auto& t : zone_turb) {
             if (t.id == turb.id) continue;  // skip self
-            res = calculate_interference(turb, t);
-            caused += res * res;
+            loss += loss_on(t);
         }
     }
-
-    // Apply wake effect from other turbines
-    double wind_res = wind * (1.0 - sqrt(caused));
-    own += power_produced(wind_res, turb);
-
-    // E_ij + E_ji for fixed turbines j
-    caused = 0.0;
+ 
+    // Loss caused on the fixed turbines
     for (auto& f : fixd) {
         if (f.id == turb.id) continue;
-        res = calculate_interference(turb, f);
-        caused += res * res;
+        loss += loss_on(f);
     }
-
-    wind_res = wind * (1.0 - sqrt(caused));
-    own += power_produced(wind_res, fixd[0]);  // fixd[0] is a reference
-
-    return own;
+ 
+    return own - loss;
 }
 
 // Calculate turbine pressure
@@ -58,22 +76,31 @@ double turbine_pressure(
     double lambdaC,
     double lambdaP
 ) {
-    // Get turbine's raw cost and energy
+    // Get turbine's raw cost
     double cost = t.costCalculated;
-    double energy = t.powerCalculated;
-
-    // Normalize cost and energy
+ 
+    // Normalize cost
     double normCost = cost / maxCost;
-    // For energy: normalized marginal contribution
+ 
+    // Normalized marginal contribution (already includes the turbine's own
+    // energy, so it must not be added again)
     double marginalEnergy = calc_marginal_energy(t, s);
-    double normEnergy = (energy + marginalEnergy) / maxEnergy;
+    double normEnergy = marginalEnergy / maxEnergy;
 
+    double costPart = normCost * lambdaC;
+    double energyPart = normEnergy * lambdaP;
+
+    // cout << "NORM_COST: " << normCost << " NORM_NRG: " << normEnergy << endl;
+    
+    // ? press = lambdaC * normCost + lambdaP * normEnergy
     // Pressione = lambdaC * Ci_hat + lambdaP * (1 - MPi_hat)
-    // Higher cost and lower energy => higher pressure (more likely to remove)
-    double pressure = lambdaC * normCost + lambdaP * (1.0 - normEnergy);
-
+    // Higher cost and lower marginal energy => higher pressure (more likely to remove)
+    // double pressure = lambdaC * normCost + lambdaP * (1.0 - normEnergy);
+    double pressure = costPart - energyPart;
+ 
     return pressure;
 }
+
 
 // ============================================================================
 // Core: Position opportunity calculation
@@ -89,26 +116,26 @@ double position_opportunity(
     double lambdaC,
     double lambdaP
 ) {
-    // Raw cost and energy of the candidate position
+    // Raw cost of the candidate position
     double cost = possible_t.costCalculated;
-    double energy = possible_t.powerCalculated;
-
-    // Marginal energy at the candidate position
+ 
+    // Marginal energy at the candidate position (uses possible_t.powerCalculated
+    // as its own production)
     double marginalEnergy = calc_marginal_energy(possible_t, s);
-
-    // Normalize using archive maxima
+ 
+    // Normalize using archive maxima (same normalization used by
+    // ParetoSetLS::calculate_pareto_dir_vec)
     double normCost = cost / maxCost;
-    double normEnergy = (energy + marginalEnergy) / maxEnergy;
-
+    double normEnergy = marginalEnergy / maxEnergy;
+ 
     // cout << "Max_cost_energy" << maxCost << " " << maxEnergy << endl
     // << " Dir_vec: " << lambdaC << " " << lambdaP << endl
     // << " cost_energy: " << cost << " " << energy << " " << marginalEnergy << endl;
-
+ 
     // Opportunity = lambdaP * MPj_hat - lambdaC * Cj_hat
     // Higher opportunity = better position
     double opportunity = lambdaP * normEnergy - lambdaC * normCost;
-
-
+ 
     return opportunity;
 }
 
@@ -189,122 +216,117 @@ Solution* swap_turbines(Turbine new_t, Solution* s) {
 }
 
 // ============================================================================
-// Core: Adaptive memory (failure penalty)
-// ============================================================================
-
-// Update failure counts for pressure and opportunity
-// Pressionei' = Pressionei / (1 + eta * faili)
-// Opportunityj' = Opportunityj / (1 + eta * failj)
-pair<double, double> apply_adaptive_memory(
-    double pressure,
-    double opportunity,
-    int failureCount,
-    double eta
-) {
-    if (failureCount <= 0) return make_pair(pressure, opportunity);
-
-    double penalized_pressure = pressure / (1.0 + eta * failureCount);
-    double penalized_opportunity = opportunity / (1.0 + eta * failureCount);
-
-    return make_pair(penalized_pressure, penalized_opportunity);
-}
-
-// ============================================================================
 // Main: WPPS local search for a single solution
 // ============================================================================
 
-// Structure to track adaptive memory state per turbine
-struct TurbineMemory {
-    int failureCount;
-    double lastPressure;
-    double lastOpportunity;
+map<pair<int,int>, int> initializeTurbmemory(){
+    map<pair<int,int>, int> turbMemory;
 
-    TurbineMemory() : failureCount(0), lastPressure(0.0), lastOpportunity(0.0) {}
-
-    void record_failure() {
-        failureCount++;
+    for(int i = 0; i < foundations.size(); i++){
+        for(int j = 0; j < foundations[i].size(); j++){
+            turbMemory[{i, j}] = 0;
+        }
     }
-
-    void record_success() {
-        failureCount = 0;  // Reset on success
-    }
-
-    void record_pressure(double p) { lastPressure = p; }
-
-    void record_opportunity(double o) { lastOpportunity = o; }
-
-    double getPressure() { return failureCount > 0 ? lastPressure / (1.0 + 0.5 * failureCount) : lastPressure; }
-
-    double getOpportunity() { return failureCount > 0 ? lastOpportunity / (1.0 + 0.5 * failureCount) : lastOpportunity; }
-};
+    return turbMemory;
+}
 
 // Map of turbine IDs to their memory state
-map<int, TurbineMemory> turbMemory;
+map<pair<int,int>, int> turbMemory = initializeTurbmemory();
+double weight_fail = 0.0;
+
+
+int c_greater = 0, e_greater = 0;
+
+int thresh_dir = 95;
+int thresh_press = 95;
 
 // WPPS local search for a single solution
 // Returns pointer to improved solution
 Solution* wpPS_local_search(Solution* current_solution, ParetoSetLS& archive) {
     // Get the Pareto direction vector for the current iteration
-    // pair<double, double> dir = archive.calculate_pareto_dir_vec();
 
-    int r = rand() % 100;
+    int r_dir = rand() % 100;
 
-    double lambdaC = (double) r / (double) 100;
-    double lambdaP = (double) (100-r) / (double) 100;
+    Dir dir;
+
+    if(r_dir < thresh_dir){
+        dir = archive.pick_direction(current_solution);
+    } else {
+        int r = rand() % 101;
+        dir.lc = (double) r / (double) 100;
+        dir.lp = (double) (100-r) / (double) 100;
+    }
+
+
+    double lambdaC = dir.lc;
+    double lambdaP = dir.lp;
+
+    if(lambdaC < lambdaP){
+        e_greater++;
+    } else {
+        c_greater++;
+    }
+
+    // cout << "VEC: " << lambdaC << " " << lambdaP << endl;
+
     // Get archive maxima for normalization
     double maxCost = archive.getMaxCost();
     double maxEnergy = archive.getMaxEnergy();
+    double minCost = archive.getMinCost();
+    double minEnergy = archive.getMinEnergy();
 
-    int num_turbines = 0;
-    for (auto& zone : current_solution->turbines) {
-        num_turbines += zone.size();
-    }
+    double Cr = max(maxCost - minCost, 0.01 * maxCost);
+    double Er = max(maxEnergy - minEnergy, 0.01 * maxEnergy);
 
     // ========================================================================
     // Step 1: Calculate pressure for all turbines
     // ========================================================================
 
-    vector<pair<double, pair<int, int>>> pressures;  // (pressure, (zone, index))
+    pair<double, pair<int, int>> worst;
+    double worst_press = -INFINITY;
 
-    for (int zone = 0; zone < current_solution->turbines.size(); zone++) {
-        for (int i = 0; i < current_solution->turbines[zone].size(); i++) {
-            Turbine& t = current_solution->turbines[zone][i];
+    // * TEST IGNORING PRESSURE
+    // worst.second.first = rand() % current_solution->turbines.size();
+    // worst.second.second = rand() % current_solution->turbines[worst.second.first].size();
+    
+    int r_press = rand() % 100;
 
-            // Calculate and store pressure
-            double pressure = turbine_pressure(
-                t, current_solution, maxCost, maxEnergy, lambdaC, lambdaP
-            );
-
-            // Record pressure for memory
-            turbMemory[t.id].record_pressure(pressure);
-
-            // TODO: Change to make find the biggest pressure on calculation in the loop
-            pressures.push_back(make_pair(pressure, make_pair(zone, i)));
+    if(r_press < thresh_press){
+        for (int zone = 0; zone < current_solution->turbines.size(); zone++) {
+            for (int i = 0; i < current_solution->turbines[zone].size(); i++) {
+                Turbine& t = current_solution->turbines[zone][i];
+    
+                // ! CHANGED MAXCOST MAXENERGY TO CR ER
+                // Calculate and store pressure
+                double pressure = turbine_pressure(
+                    t, current_solution, Cr, Er, lambdaC, lambdaP
+                );
+    
+                pressure = pressure / (1.0 + weight_fail * turbMemory[{zone, i}]);
+    
+                if(worst_press < pressure){
+                    worst = make_pair(pressure, make_pair(zone, i));
+                    worst_press = pressure;
+                }
+            }
         }
+    } else {
+        worst.second.first = rand() % current_solution->turbines.size();
+        worst.second.second = rand() % current_solution->turbines[worst.second.first].size();
     }
+
+
 
     // ========================================================================
     // Step 2: Select turbine with highest pressure (worst turbine)
     // ========================================================================
 
-    // Sort by pressure descending to find the worst turbine
-    sort(pressures.begin(), pressures.end(),
-         [](const pair<double, pair<int, int>>& a,
-            const pair<double, pair<int, int>>& b) {
-             return a.first > b.first;
-         });
-
     // Select the turbine with highest pressure
-    pair<double, pair<int, int>> worst = pressures[0];
-    double pressure_worst = worst.first;
     int zone_worst = worst.second.first;
     int idx_worst = worst.second.second;
 
     Turbine& worst_turbine = current_solution->turbines[zone_worst][idx_worst];
 
-    // Apply adaptive memory penalty to pressure
-    double penalized_pressure = turbMemory[worst_turbine.id].getPressure();
-    (void)penalized_pressure;  // Penalized pressure used in selection
 
     // ========================================================================
     // Step 3: Calculate opportunity for candidate positions
@@ -312,22 +334,34 @@ Solution* wpPS_local_search(Solution* current_solution, ParetoSetLS& archive) {
 
     // Build set of occupied positions to avoid duplicates
     set<int> occupied_positions;
-    for (auto& zone : current_solution->turbines) {
-        for (auto& t : zone) {
-            occupied_positions.insert(t.index);
-        }
+    for (auto& t : current_solution->turbines[zone_worst]) {
+        occupied_positions.insert(t.index);
     }
 
     // Find candidate positions in the same zone that are not occupied
-    vector<pair<double, pair<int, Turbine>>> candidate_positions;
+    pair<double, pair<int, Turbine>> best_candidate;
+    double best_opport = -INFINITY;
 
-    // Note: foundations[zone] contains Foundation struct with cost, x, y
+    int num_pos = foundations[zone_worst].size();
+
+    // * TEST IGNORING OPORTUNITY
+    // // int rand_pos = rand() % num_pos;
+    // // best_candidate.second.first = rand_pos;
+    // // best_candidate.second.second = create_turbine_in_pos(worst_turbine, foundations[zone_worst][rand_pos], rand_pos, current_solution);
+
+    int possible_pos = min(num_neighbors, (int)foundations[zone_worst].size());
+
+    int c = 0;
+
     // Iterate through possible foundation positions in this zone
-    for (int i = 0; i < foundations[zone_worst].size(); i++) {
-        int idx = i;
+    while (c < possible_pos) {
+        int idx = rand() % num_pos;
+
         if (occupied_positions.find(idx) != occupied_positions.end()) {
             continue;  // Skip occupied positions
         }
+
+        occupied_positions.insert(idx);
 
         // Create a temporary turbine at this candidate position
         Foundation& f = foundations[zone_worst][idx];
@@ -340,36 +374,27 @@ Solution* wpPS_local_search(Solution* current_solution, ParetoSetLS& archive) {
         // Set the candidate's power
         candidate_t.powerCalculated = power_at_pos;
 
+        // ! CHANGED MAXCOST MAXENERGY TO CR ER
         // Calculate opportunity for this candidate position
         double opportunity_val = position_opportunity(
-            candidate_t, current_solution, maxCost, maxEnergy, lambdaC, lambdaP
+            candidate_t, current_solution, Cr, Er, lambdaC, lambdaP
         );
 
-        // Record opportunity for memory
-        turbMemory[candidate_t.id].record_opportunity(opportunity_val);
+        opportunity_val = opportunity_val / (1.0 + weight_fail * turbMemory[{zone_worst, idx}]);
 
-        candidate_positions.push_back(make_pair(opportunity_val, make_pair(idx, candidate_t)));
+        if(best_opport < opportunity_val){
+            best_candidate = make_pair(opportunity_val, make_pair(idx, candidate_t));
+            best_opport = opportunity_val;
+        }
+        c++;
     }
 
     // ========================================================================
     // Step 4: Select candidate position with highest opportunity
     // ========================================================================
-
-    // Sort by opportunity descending
-    sort(candidate_positions.begin(), candidate_positions.end(),
-         [](const pair<double, pair<int, Turbine>>& a,
-            const pair<double, pair<int, Turbine>>& b) {
-             return a.first > b.first;
-         });
-
+    
     // Select position with highest opportunity
-    pair<double, pair<int, Turbine>> best_candidate = candidate_positions[0];
-    int idx_best = best_candidate.second.first;
     Turbine best_turbine = best_candidate.second.second;
-
-    // Apply adaptive memory penalty to opportunity
-    double penalized_opportunity = turbMemory[best_turbine.id].getOpportunity();
-    (void)penalized_opportunity;  // Penalized opportunity used in selection
 
     // ========================================================================
     // Step 5: Perform relocation (swap turbines)
@@ -392,27 +417,20 @@ Solution* wpPS_local_search(Solution* current_solution, ParetoSetLS& archive) {
     // Step 6: Update memory
     // ========================================================================
 
-    // Check if the new solution is better
-    pair<double, double> new_fitness = new_solution->fitness;
-    pair<double, double> old_fitness = current_solution->fitness;
-
-    // Cost is minimized (-1 * cost), Energy is maximized
-    // Accept if improved
+    // // Accept if improved
     bool improved = dominatesP(*new_solution, *current_solution);
+
+    pair<int,int> best_indexes = {zone_worst, best_turbine.index};
 
     if (improved) {
         // Success: reset failure count for the selected turbine
         // and record success for the candidate position
-        turbMemory[worst_turbine.id].record_success();
-        turbMemory[best_turbine.id].record_success();
-
-        // Also update the archive if a ParetoSetLS reference is available
-        // (Note: this function receives archive, but adding to archive
-        //  should be done by the caller)
+        turbMemory[worst.second] = 0;
+        turbMemory[best_indexes] = 0;
     } else {
         // Failure: increment failure count for both turbines
-        turbMemory[worst_turbine.id].record_failure();
-        turbMemory[best_turbine.id].record_failure();
+        turbMemory[best_indexes]++;
+        turbMemory[worst.second]++;
     }
 
     // cout << "-----------------------------------" << endl;
@@ -457,10 +475,15 @@ vector<Solution*>* wpPS_local_search(vector<Solution*> population) {
         Solution* improved_sol = wpPS_local_search(sol, *archive);
 
         // If improved, keep the new solution
-        result->push_back(improved_sol);
+        if(dominatesP(*improved_sol, *sol) || !dominatesP(*sol, *improved_sol)){
+            result->push_back(improved_sol);
+        } else{
+            result->push_back(new Solution(*sol));
+            delete improved_sol;
+        }
     }
 
-    cout << "ACTUAL COUNT: " << countRevalue << endl;
+    cout << "ACTUAL COUNT: " << countRevalue << "| C_Greater " << c_greater << " E_Greater " << e_greater << endl;
 
     delete archive;
 

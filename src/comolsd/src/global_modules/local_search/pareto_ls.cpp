@@ -28,7 +28,7 @@ vector<Solution *> * pareto_ls(vector<Solution*> population, bool improved){
             break;
         }
         
-        vector<Solution *> neighborhood = neighborHoodFunction(selected, 163);
+        vector<Solution *> neighborhood = neighborHoodFunction(selected, num_neighbors);
 
         for(int i = 0; i < neighborhood.size(); i++){
             p->adicionarSol(neighborhood[i]);

@@ -11,6 +11,7 @@ using namespace std;
 
 int countRevalue = 0;
 int num_neighbors = 50;
+// int num_neighbors = 163;
 
 BoundedParetoSet * pareto = new BoundedParetoSet();
 int stop_criteria = 1000000;
@@ -101,6 +102,7 @@ int main(int argc, char* argv[]){
             }
 
             delete result;
+            cout << countRevalue << endl;
         }
     }  else if (algorithm == "apls"){
         // ILS as standalone: use the local search directly
@@ -165,9 +167,15 @@ int main(int argc, char* argv[]){
             } pop_ptrs.clear();
 
             for(Solution* s : *result){
-                pop_ptrs.push_back(new Solution(*s));
+                // pop_ptrs.push_back(new Solution(*s));
                 delete s;
             }
+
+            for(Solution* s : pareto->getElementos()){
+                pop_ptrs.push_back(new Solution(*s));
+            }
+
+
 
             delete result;
         }

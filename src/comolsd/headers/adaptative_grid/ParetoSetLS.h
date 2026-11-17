@@ -15,6 +15,8 @@
 #include "../global_modules/generate_initial_population/population.h"
 #include "./ParetoSet.h"
 
+struct Dir { double lc, lp; };
+
 class ParetoSetLS {
     protected:
         std::list<pair<Solution *, bool>> sol;
@@ -30,6 +32,8 @@ class ParetoSetLS {
         // New: tracks highest values for normalization
         double maxCost;
         double maxEnergy;
+        double minCost;
+        double minEnergy;
 
     public:
         ParetoSetLS();
@@ -55,10 +59,13 @@ class ParetoSetLS {
         // New: getters for maxima
         double getMaxCost();
         double getMaxEnergy();
+        double getMinCost();
+        double getMinEnergy();
 
         // New: Pareto direction vector calculation
         // Returns pair<double, double> (lambdaC, lambdaP)
         pair<double, double> calculate_pareto_dir_vec();
+        Dir pick_direction(Solution* cur);
 };
 
 #endif

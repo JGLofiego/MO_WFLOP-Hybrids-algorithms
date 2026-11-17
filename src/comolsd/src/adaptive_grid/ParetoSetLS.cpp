@@ -117,6 +117,8 @@ ParetoSetLS::ParetoSetLS() {
     // Initialize maxima for normalization
     maxCost = -1.0;
     maxEnergy = -1.0;
+    minCost = INFINITY;
+    minEnergy = INFINITY;
 }
 
 ParetoSetLS::~ParetoSetLS() {
@@ -198,17 +200,22 @@ bool ParetoSetLS::adicionarSol(Solution *s) {
     }
 
     // Update maxima for normalization
-    if (abs(t->fitness.first) > maxCost) {
-        maxCost = abs(t->fitness.first);
+    if (fabs(t->fitness.first) > maxCost) {
+        maxCost = fabs(t->fitness.first);
+    } else if(fabs(t->fitness.first) < minCost){
+        minCost = fabs(t->fitness.first);
     }
+
     if (t->fitness.second > maxEnergy) {
         maxEnergy = t->fitness.second;
+    } else if(fabs(t->fitness.second) < minEnergy){
+        minEnergy = fabs(t->fitness.second);
     }
 
     // se houve uma mudanca grande nos ranges (maior que 10% valor), atualizar o grid
     for (int k = 0; k < NUMOBJETIVOS; k++) {
-        if (fabs(rangeNovo[k].min - rangeAtual[k].min) > 0.1 * rangeAtual[k].min ||
-            fabs(rangeNovo[k].max - rangeAtual[k].max) > 0.1 * rangeAtual[k].max) {
+        if (fabs(rangeNovo[k].min - rangeAtual[k].min) > 0.1 * fabs(rangeAtual[k].min) ||
+            fabs(rangeNovo[k].max - rangeAtual[k].max) > 0.1 * fabs(rangeAtual[k].max)) {
             //fprintf(stderr,"Atualizando grid!\n");
             updateGrid();
             break;
@@ -336,6 +343,14 @@ double ParetoSetLS::getMaxEnergy() {
     return maxEnergy;
 }
 
+double ParetoSetLS::getMinCost() {
+    return minCost;
+}
+
+double ParetoSetLS::getMinEnergy() {
+    return minEnergy;
+}
+
 // Pareto direction vector calculation
 // Returns pair<double, double> (lambdaC, lambdaP) where:
 //   lambdaC = DeltaP / (DeltaC + DeltaP)
@@ -393,6 +408,50 @@ pair<double, double> ParetoSetLS::calculate_pareto_dir_vec() {
     // cout << "PARETO DIR VEC: " << lambdaC << " " << lambdaP << endl;
 
     return make_pair(lambdaC, lambdaP);
+}
+
+
+// Assume f.first = custo (minimizar) e f.second = energia (maximizar).
+// Se seu f.first é armazenado com sinal trocado, ajuste a ordenação.
+Dir ParetoSetLS::pick_direction(Solution* cur) {
+    vector<Solution*> a;
+    for (auto it = getBegin(); it != getEnd(); ++it) a.push_back(it->first);
+    sort(a.begin(), a.end(), [](auto* x, auto* y){ return x->fitness.first > y->fitness.first; });
+    int n = a.size();
+    if (n < 2) return {0.5, 0.5};
+
+    double Cmin = a.front()->fitness.first, Cmax = a.back()->fitness.first;
+    double Emin = a.front()->fitness.second, Emax = a.back()->fitness.second;
+    double Cr = max(fabs(Cmax - Cmin), 1e-12), Er = max(fabs(Emax - Emin), 1e-12);
+
+
+    // posição da solução corrente no arquivo (mais próxima em custo)
+    int pos = 0;
+    for (int i = 0; i < n; i++)
+        if (fabs(a[i]->fitness.first - cur->fitness.first) <
+            fabs(a[pos]->fitness.first - cur->fitness.first)) pos = i;
+
+    struct Cand { double w; double lc, lp; };
+    vector<Cand> c;
+    auto gap = [&](int i, int j) {            // gap interno entre i e j
+        double dC = fabs(a[j]->fitness.first  - a[i]->fitness.first)  / Cr;
+        double dE = fabs(a[j]->fitness.second - a[i]->fitness.second) / Er;
+        double s = dC + dE;
+        return Cand{ hypot(dC, dE), dE / s, dC / s };
+    };
+    if (pos > 0)     c.push_back(gap(pos - 1, pos));
+    if (pos < n - 1) c.push_back(gap(pos, pos + 1));
+    // extensões nos extremos
+    double ext = 1.5 * (1.0 / n);                 // peso fixo; calibre
+    if (pos == 0)     c.push_back({ext, 1.0, 0.0});   // empurra custo p/ baixo
+    if (pos == n - 1) c.push_back({ext, 0.0, 1.0});   // empurra energia p/ cima
+
+    // roleta ~ w^2
+    double tot = 0; for (auto& x : c) tot += x.w * x.w;
+    double rand_double = rand() / (double)RAND_MAX;
+    double r = tot * (rand_double), acc = 0;
+    for (auto& x : c) { acc += x.w * x.w; if (r <= acc) return {x.lc, x.lp}; }
+    return {c.back().lc, c.back().lp};
 }
 
 #endif
